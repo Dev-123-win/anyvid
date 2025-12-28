@@ -74,7 +74,7 @@ Implemented a sophisticated ad strategy using `google_mobile_ads`:
 
 ## 7. Gradle 8+ / Modern AGP Compatibility
 
-- **Centralized Repositories**: Migrated all repository declarations (including JitPack) to `android/settings.gradle.kts` using `dependencyResolutionManagement`. This prevents "Project declares repositories" errors in modern build environments.
+- **Build Stability**: Reverted to the traditional `allprojects` repository management in `android/build.gradle.kts`. This provides maximum compatibility across different Gradle and Flutter SDK versions, ensuring `youtubedl-android` (via JitPack) and Flutter's engine are both resolved correctly.
 - **Kotlin DSL Fixes**: Updated `minifyEnabled` to `isMinifyEnabled` as required by newer Gradle Kotlin DSL versions.
 
 ---
