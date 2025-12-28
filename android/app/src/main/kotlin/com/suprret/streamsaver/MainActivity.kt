@@ -11,7 +11,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.yausername.youtubedl_android.YoutubeDL
 import com.yausername.youtubedl_android.YoutubeDLRequest
-import com.yausername.youtubedl_android.ffmpeg.FFmpeg
+import com.yausername.ffmpeg.FFmpeg
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -30,11 +30,16 @@ class MainActivity : FlutterActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        try {
-            YoutubeDL.getInstance().init(this)
-            FFmpeg.getInstance().init(this)
-        } catch (e: Exception) {
-            Log.e("MainActivity", "Failed to initialize YoutubeDL Engine", e)
+        
+        // Initialize heavy engines in background to avoid splash hang
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                YoutubeDL.getInstance().init(this@MainActivity)
+                FFmpeg.getInstance().init(this@MainActivity)
+                Log.d("MainActivity", "Native Engines Initialized successfully")
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Failed to initialize YoutubeDL Engine", e)
+            }
         }
     }
 
@@ -108,7 +113,7 @@ class MainActivity : FlutterActivity() {
                         if (height <= 0) continue
                         
                         val label = "${height}p"
-                        val size = format.fileSizeApprox ?: format.fileSize ?: 0L
+                        val size = format.fileSize ?: 0L
                         val sizeStr = if (size > 0) "${size / 1024 / 1024}MB" else "Unknown"
                         
                         // Favor mp4 or just pick best for each resolution
@@ -123,12 +128,12 @@ class MainActivity : FlutterActivity() {
                     }
                     
                     // Add Audio Only option
-                    val bestAudio = info.formats?.filter { it.acodec != "none" && it.vcodec == "none" }?.maxByOrNull { it.abr ?: 0f }
+                    val bestAudio = info.formats?.filter { it.acodec != "none" && it.vcodec == "none" }?.maxByOrNull { (it.abr ?: 0f).toFloat() }
                     if (bestAudio != null) {
                         val audioObj = JSONObject()
                         audioObj.put("id", bestAudio.formatId)
                         audioObj.put("label", "Audio Only (MP3)")
-                        val aSize = bestAudio.fileSizeApprox ?: bestAudio.fileSize ?: 0L
+                        val aSize = bestAudio.fileSize ?: 0L
                         audioObj.put("size", if (aSize > 0) "${aSize / 1024 / 1024}MB" else "Unknown")
                         audioObj.put("ext", "mp3")
                         options.put(audioObj)

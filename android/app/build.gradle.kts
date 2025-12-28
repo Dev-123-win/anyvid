@@ -10,6 +10,15 @@ android {
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+            doNotStrip.add("**/*.zip.so")
+            doNotStrip.add("**/libpython.so")
+            doNotStrip.add("**/libffmpeg.so")
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
