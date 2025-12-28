@@ -74,7 +74,7 @@ Implemented a sophisticated ad strategy using `google_mobile_ads`:
 
 ## 7. Gradle 8+ / Modern AGP Compatibility
 
-- **Build Stability**: Reverted to the traditional `allprojects` repository management in `android/build.gradle.kts`. This provides maximum compatibility across different Gradle and Flutter SDK versions, ensuring `youtubedl-android` (via JitPack) and Flutter's engine are both resolved correctly.
+- **Build Stability**: Reverted to the traditional `allprojects` repository management in `android/build.gradle.kts`. Updated `youtubedl-android` coordinates to use the new `io.github.junkfood02` group ID, ensuring compatibility with Maven Central and resolving JitPack resolution errors.
 - **Kotlin DSL Fixes**: Updated `minifyEnabled` to `isMinifyEnabled` as required by newer Gradle Kotlin DSL versions.
 
 ---
