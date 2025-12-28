@@ -72,6 +72,11 @@ Implemented a sophisticated ad strategy using `google_mobile_ads`:
 - **Background Integrity**: Added `FOREGROUND_SERVICE` and `WAKE_LOCK` permissions to ensure stability during deep merging processes.
 - **Auto-Cleanup**: On app launch, the system automatically scans and purges incomplete `.part` or `.ytdl` files older than 24 hours.
 
+## 7. Gradle 8+ / Modern AGP Compatibility
+
+- **Centralized Repositories**: Migrated all repository declarations (including JitPack) to `android/settings.gradle.kts` using `dependencyResolutionManagement`. This prevents "Project declares repositories" errors in modern build environments.
+- **Kotlin DSL Fixes**: Updated `minifyEnabled` to `isMinifyEnabled` as required by newer Gradle Kotlin DSL versions.
+
 ---
 
 ### Implementation Status: **100% Complete**

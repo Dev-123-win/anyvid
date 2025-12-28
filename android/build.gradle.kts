@@ -1,10 +1,4 @@
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-        maven { url = uri("https://jitpack.io") }
-    }
-}
+// Repositories are now managed in settings.gradle.kts
 
 val newBuildDir: Directory =
     rootProject.layout.buildDirectory
