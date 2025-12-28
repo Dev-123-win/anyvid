@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:provider/provider.dart';
 import '../../providers/downloads_provider.dart';
 import '../../models/video_metadata.dart';
@@ -14,15 +15,19 @@ class AnalysisBottomSheet extends StatelessWidget {
 
     if (metadata == null) return const SizedBox.shrink();
 
+    // Group options
+    final videoOptions = metadata.options.where((o) => o.ext != 'mp3').toList();
+    final audioOptions = metadata.options.where((o) => o.ext == 'mp3').toList();
+
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: Color(0xFFFAFAFA),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(32),
           topRight: Radius.circular(32),
         ),
       ),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -44,17 +49,20 @@ class AnalysisBottomSheet extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
                 child: Image.network(
                   metadata.thumbnail,
-                  width: 120,
-                  height: 68,
+                  width: 100,
+                  height: 100,
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
-                    width: 120,
-                    height: 68,
+                    width: 100,
+                    height: 100,
                     color: Colors.grey[200],
-                    child: const Icon(Icons.video_library),
+                    child: HugeIcon(
+                      icon: HugeIcons.strokeRoundedVideo01,
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
               ),
@@ -65,19 +73,30 @@ class AnalysisBottomSheet extends StatelessWidget {
                   children: [
                     Text(
                       metadata.title,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.titleLarge?.copyWith(fontSize: 16),
-                      maxLines: 2,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                      maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      metadata.type.toUpperCase(),
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0061FF).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        metadata.type.toUpperCase(),
+                        style: const TextStyle(
+                          color: Color(0xFF0061FF),
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
@@ -86,71 +105,63 @@ class AnalysisBottomSheet extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 32),
-          Text(
-            'Select Quality',
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(fontSize: 18),
-          ),
+          const SizedBox(height: 24),
+          const Divider(),
           const SizedBox(height: 16),
 
-          // Options List
+          // Scrollable Options
           Flexible(
-            child: ListView.separated(
-              shrinkWrap: true,
-              itemCount: metadata.options.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final option = metadata.options[index];
-                return _QualityItem(
-                  option: option,
-                  onTap: () {
-                    final isHighQuality =
-                        option.label.contains('1080p') ||
-                        option.label.contains('4K');
-
-                    if (isHighQuality) {
-                      showDialog(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: const Text('Unlock High Quality?'),
-                          content: const Text(
-                            'Watch a short video to unlock 1080p/4K downloads.',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx),
-                              child: const Text('Cancel'),
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.pop(ctx);
-                                AdService.showRewarded((success) {
-                                  if (success) {
-                                    provider.startDownload(option);
-                                    Navigator.pop(context);
-                                  }
-                                });
-                              },
-                              child: const Text('Watch & Unlock'),
-                            ),
-                          ],
-                        ),
-                      );
-                    } else {
-                      provider.startDownload(option);
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Download started...')),
-                      );
-                    }
-                  },
-                );
-              },
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (videoOptions.isNotEmpty) ...[
+                    _SectionHeader(
+                      title: 'Video Quality',
+                      icon: HugeIcons.strokeRoundedVideo01,
+                    ),
+                    ...videoOptions.map((opt) => _QualityItem(option: opt)),
+                    const SizedBox(height: 24),
+                  ],
+                  if (audioOptions.isNotEmpty) ...[
+                    _SectionHeader(
+                      title: 'Audio Only',
+                      icon: HugeIcons.strokeRoundedMusicNote01,
+                    ),
+                    ...audioOptions.map((opt) => _QualityItem(option: opt)),
+                  ],
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  final dynamic icon;
+  const _SectionHeader({required this.title, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          HugeIcon(icon: icon, color: Colors.grey[800]!, size: 18),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              color: Colors.grey[800],
+            ),
+          ),
         ],
       ),
     );
@@ -159,77 +170,151 @@ class AnalysisBottomSheet extends StatelessWidget {
 
 class _QualityItem extends StatelessWidget {
   final VideoOption option;
-  final VoidCallback onTap;
 
-  const _QualityItem({required this.option, required this.onTap});
+  const _QualityItem({required this.option});
 
   @override
   Widget build(BuildContext context) {
-    final isHighQuality =
-        option.label.contains('1080p') || option.label.contains('4K');
+    final provider = context.read<DownloadsProvider>();
+    final isPremium =
+        option.label == '1080p' || option.label == '2k' || option.label == '4k';
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[200]!),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              option.ext == 'mp3' ? Icons.headset : Icons.slow_motion_video,
-              color: const Color(0xFF0061FF),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    option.label,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  Text(
-                    '${option.ext.toUpperCase()} • ${option.size}',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                  ),
-                ],
-              ),
-            ),
-            if (isHighQuality)
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: () {
+          if (isPremium) {
+            _showUnlockDialog(context, provider);
+          } else {
+            provider.startDownload(option);
+            Navigator.pop(context); // Close sheet
+          }
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: Colors.grey[200]!),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.amber[100],
-                  borderRadius: BorderRadius.circular(20),
+                  color: const Color(0xFF0061FF).withValues(alpha: 0.05),
+                  shape: BoxShape.circle,
                 ),
-                child: const Row(
+                child: HugeIcon(
+                  icon: option.ext == 'mp3'
+                      ? HugeIcons.strokeRoundedMusicNote01
+                      : HugeIcons.strokeRoundedPlayList,
+                  color: const Color(0xFF0061FF),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.lock_open, size: 14, color: Colors.amber),
-                    SizedBox(width: 4),
                     Text(
-                      'Premium',
-                      style: TextStyle(
-                        color: Colors.amber,
-                        fontSize: 12,
+                      option.label,
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
+                    ),
+                    Text(
+                      '${option.ext.toUpperCase()} • ${option.size}',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
                     ),
                   ],
                 ),
               ),
-            const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-          ],
+              if (isPremium)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.amber[100],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      HugeIcon(
+                        icon: HugeIcons.strokeRoundedTick01,
+                        color: Colors.amber,
+                        size: 12,
+                      ),
+                      SizedBox(width: 4),
+                      Text(
+                        'Unlock',
+                        style: TextStyle(
+                          color: Colors.amber,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(width: 12),
+              HugeIcon(
+                icon: HugeIcons.strokeRoundedArrowRight01,
+                color: Colors.grey[400]!,
+                size: 16,
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  void _showUnlockDialog(BuildContext context, DownloadsProvider provider) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Text('Download High Quality?'),
+        content: const Text(
+          'Please watch a short ad to unlock this resolution for free.',
+          style: TextStyle(fontSize: 15, height: 1.5),
+        ),
+        actionsPadding: const EdgeInsets.all(16),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Maybe Later',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx); // Close dialog
+              AdService.showRewarded((success) {
+                if (success && context.mounted) {
+                  provider.startDownload(option);
+                  Navigator.pop(context); // Close sheet
+                }
+              });
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0061FF),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text('Watch & Download'),
+          ),
+        ],
       ),
     );
   }

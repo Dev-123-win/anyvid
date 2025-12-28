@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:lottie/lottie.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:provider/provider.dart';
 import '../providers/downloads_provider.dart';
 import 'widgets/analysis_bottom_sheet.dart';
@@ -75,47 +75,78 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 60),
-              Text('AnyVid', style: Theme.of(context).textTheme.displayMedium),
+              HugeIcon(
+                icon: HugeIcons.strokeRoundedVideo01,
+                color: Color(0xFF0061FF),
+                size: 48,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'AnyVid',
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -1,
+                ),
+              ),
               const SizedBox(height: 8),
               Text(
-                'Download high-quality videos locally.',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
+                'Download any video from YouTube & Instagram for free.',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: Colors.grey[600],
+                  height: 1.4,
+                ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 48),
 
               // Input Field
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Link to video',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: TextField(
-                  controller: _urlController,
-                  decoration: InputDecoration(
-                    hintText: 'Paste video link here...',
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 20,
-                    ),
-                    suffixIcon: IconButton(
-                      icon: const Icon(
-                        Icons.content_paste,
-                        color: Color(0xFF0061FF),
+                    child: TextField(
+                      controller: _urlController,
+                      decoration: InputDecoration(
+                        hintText: 'Paste link here...',
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 20,
+                        ),
+                        prefixIcon: Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: HugeIcon(
+                            icon: HugeIcons.strokeRoundedLink01,
+                            color: Colors.grey,
+                            size: 20,
+                          ),
+                        ),
+                        suffixIcon: Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: TextButton(
+                            onPressed: _pasteFromClipboard,
+                            child: const Text('Paste'),
+                          ),
+                        ),
                       ),
-                      onPressed: _pasteFromClipboard,
                     ),
                   ),
-                ),
+                ],
               ),
 
               const SizedBox(height: 24),
@@ -123,50 +154,84 @@ class _HomeScreenState extends State<HomeScreen> {
               // Analyze Button
               SizedBox(
                 width: double.infinity,
-                height: 64,
-                child: ElevatedButton(
+                height: 60,
+                child: ElevatedButton.icon(
                   onPressed: provider.isAnalyzing ? null : _handleAnalyze,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF0061FF),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     elevation: 0,
                   ),
-                  child: provider.isAnalyzing
+                  icon: provider.isAnalyzing
+                      ? const SizedBox.shrink()
+                      : HugeIcon(
+                          icon: HugeIcons.strokeRoundedSearch01,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                  label: provider.isAnalyzing
                       ? const SizedBox(
-                          height: 24,
-                          width: 24,
+                          height: 20,
+                          width: 20,
                           child: CircularProgressIndicator(
                             color: Colors.white,
                             strokeWidth: 2,
                           ),
                         )
                       : const Text(
-                          'Analyze Link',
+                          'Analyze Video',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                 ),
               ),
 
-              const SizedBox(height: 100),
+              const SizedBox(height: 32),
 
-              // Loading Animation Placeholder
-              if (provider.isAnalyzing)
-                Center(
-                  child: Lottie.network(
-                    'https://assets9.lottiefiles.com/packages/lf20_76biv8.json', // Search animation
-                    height: 200,
-                  ),
+              // Supported Apps
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(12),
                 ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildAppBadge('YouTube', HugeIcons.strokeRoundedYoutube),
+                    _buildAppBadge(
+                      'Instagram',
+                      HugeIcons.strokeRoundedInstagram,
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildAppBadge(String name, dynamic icon) {
+    return Row(
+      children: [
+        HugeIcon(icon: icon, color: Colors.grey[700]!, size: 18),
+        const SizedBox(width: 8),
+        Text(
+          name,
+          style: TextStyle(
+            color: Colors.grey[700],
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+          ),
+        ),
+      ],
     );
   }
 }

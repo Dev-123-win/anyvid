@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:provider/provider.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'providers/downloads_provider.dart';
@@ -10,7 +11,6 @@ import 'services/ad_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Heavy SDKs moved to lazy load
   runApp(
     MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => DownloadsProvider())],
@@ -37,7 +37,7 @@ class AnyVidApp extends StatelessWidget {
           primary: const Color(0xFF0061FF),
         ),
         textTheme: GoogleFonts.interTextTheme(baseTheme.textTheme).copyWith(
-          displayMedium: GoogleFonts.poppins(
+          displaySmall: GoogleFonts.poppins(
             fontWeight: FontWeight.bold,
             color: const Color(0xFF1A1A1A),
           ),
@@ -65,7 +65,6 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   void initState() {
     super.initState();
-    // Lazy load heavy SDKs after first frame to avoid splash hang
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 500), () {
         MobileAds.instance.initialize();
@@ -90,22 +89,49 @@ class _MainNavigationState extends State<MainNavigation> {
             selectedIndex: _currentIndex,
             onDestinationSelected: (index) =>
                 setState(() => _currentIndex = index),
-            destinations: const [
+            indicatorColor: const Color(0xFF0061FF).withValues(alpha: 0.1),
+            destinations: [
               NavigationDestination(
-                icon: Icon(Icons.home_outlined),
+                icon: HugeIcon(
+                  icon: HugeIcons.strokeRoundedHome01,
+                  color: Colors.grey,
+                  size: 24,
+                ),
+                selectedIcon: HugeIcon(
+                  icon: HugeIcons.strokeRoundedHome01,
+                  color: Color(0xFF0061FF),
+                  size: 24,
+                ),
                 label: 'Home',
               ),
               NavigationDestination(
-                icon: Icon(Icons.download_done_outlined),
-                label: 'History',
+                icon: HugeIcon(
+                  icon: HugeIcons.strokeRoundedPlayList,
+                  color: Colors.grey,
+                  size: 24,
+                ),
+                selectedIcon: HugeIcon(
+                  icon: HugeIcons.strokeRoundedPlayList,
+                  color: Color(0xFF0061FF),
+                  size: 24,
+                ),
+                label: 'Library',
               ),
               NavigationDestination(
-                icon: Icon(Icons.settings_outlined),
+                icon: HugeIcon(
+                  icon: HugeIcons.strokeRoundedSettings03,
+                  color: Colors.grey,
+                  size: 24,
+                ),
+                selectedIcon: HugeIcon(
+                  icon: HugeIcons.strokeRoundedSettings03,
+                  color: Color(0xFF0061FF),
+                  size: 24,
+                ),
                 label: 'Settings',
               ),
             ],
           ),
-          // Banner Ad sticky
           AdService.getBannerWidget(),
         ],
       ),

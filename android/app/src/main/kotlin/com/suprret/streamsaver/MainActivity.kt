@@ -40,8 +40,13 @@ class MainActivity : FlutterActivity() {
                 FFmpeg.getInstance().init(this@MainActivity)
                 Log.d("MainActivity", "FFmpeg Initialized")
                 Log.d("MainActivity", "Native Engines Ready")
+                
+                // Automate Engine Update
+                Log.d("MainActivity", "Checking for Engine Updates...")
+                YoutubeDL.getInstance().updateYoutubeDL(this@MainActivity)
+                Log.d("MainActivity", "Engine Update check complete")
             } catch (e: Exception) {
-                Log.e("MainActivity", "Critical: Native initialization failed", e)
+                Log.e("MainActivity", "Critical: Native initialization or update failed", e)
             }
         }
     }
@@ -115,7 +120,14 @@ class MainActivity : FlutterActivity() {
                         val height = format.height
                         if (height <= 0) continue
                         
-                        val label = "${height}p"
+                        val label = when {
+                            height >= 2160 -> "4k"
+                            height >= 1440 -> "2k"
+                            height >= 1080 -> "1080p"
+                            height >= 720 -> "720p"
+                            height >= 480 -> "480p"
+                            else -> "360p"
+                        }
                         val size = format.fileSize ?: 0L
                         val sizeStr = if (size > 0) "${size / 1024 / 1024}MB" else "Unknown"
                         
@@ -170,13 +182,15 @@ class MainActivity : FlutterActivity() {
                 
                 val request = YoutubeDLRequest(url)
                 request.addOption("-o", outputFile.absolutePath)
+                request.addOption("--concurrent-fragments", "5")
+                request.addOption("--user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36")
                 
                 if (isAudio) {
                     request.addOption("-f", "bestaudio")
                     request.addOption("-x")
                     request.addOption("--audio-format", "mp3")
                 } else {
-                    // Ensures 1080p has sound by merging
+                    // Ensures high quality has sound by merging
                     request.addOption("-f", "$formatId+bestaudio/best")
                     request.addOption("--merge-output-format", "mp4")
                 }
@@ -194,7 +208,10 @@ class MainActivity : FlutterActivity() {
 
                 withContext(Dispatchers.Main) {
                     result.success(outputFile.absolutePath)
-                    methodChannel.invokeMethod("onSuccess", mapOf("path" to outputFile.absolutePath))
+                    methodChannel.invokeMethod("onSuccess", mapOf(
+                        "path" to outputFile.absolutePath,
+                        "url" to url
+                    ))
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
@@ -253,7 +270,10 @@ class MainActivity : FlutterActivity() {
         val manager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         manager.enqueue(request)
         
-        methodChannel.invokeMethod("onSuccess", mapOf("path" to "System History"))
+        methodChannel.invokeMethod("onSuccess", mapOf(
+            "path" to "System History",
+            "url" to url
+        ))
     }
 
     private fun updateYoutubeDL(result: MethodChannel.Result) {

@@ -41,6 +41,7 @@ dependencies:
   provider: ^6.1.2
   lottie: ^3.1.2
   google_fonts: ^6.2.1
+  hugeicons: ^1.1.4
 
 dev_dependencies:
   flutter_test:

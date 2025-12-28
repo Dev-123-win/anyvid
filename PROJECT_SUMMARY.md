@@ -81,6 +81,9 @@ Implemented a sophisticated ad strategy using `google_mobile_ads`:
     - AdMob SDK initialization is now delayed until 500ms after the first frame renders.
     - Permission requests in `HomeScreen` are delayed by 1 second to allow the UI to stabilize.
     - Optimized `ThemeData` to eliminate expensive recursive build cycles during startup.
+- **Automatic Engine Updates**:
+    - The `yt-dlp` engine now automatically checks for updates silently in the background on every app launch.
+    - Updated the Settings UI to inform users that maintenance is handled automatically.
 - **UI Performance Optimized**:
     - Refactored `AdService` to use a stateful `BannerAdWidget`, preventing memory leaks and build-cycle overhead.
     - Eliminated synchronous disk I/O (`lengthSync`, `statSync`, `listSync`) from the Flutter UI and Providers, replacing them with asynchronous streams and `FutureBuilder`.

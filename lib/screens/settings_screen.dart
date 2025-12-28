@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:provider/provider.dart';
 import 'package:path_provider/path_provider.dart';
 import '../providers/downloads_provider.dart';
@@ -34,7 +35,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings', style: Theme.of(context).textTheme.titleLarge),
+        title: Text(
+          'Settings',
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+        ),
         centerTitle: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -42,37 +48,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
-          _buildSectionHeader('Engine'),
+          _buildSectionHeader('Download Engine'),
           _buildSettingTile(
-            icon: Icons.system_update,
-            title: 'Update Engine',
-            subtitle: 'Recommended before downloading',
+            icon: HugeIcons.strokeRoundedAiSearch,
+            title: 'Automatic Updates',
+            subtitle: 'Engine stays current for better reliability',
+            trailing: HugeIcon(
+              icon: HugeIcons.strokeRoundedTick02,
+              color: Colors.green,
+              size: 20,
+            ),
+          ),
+          _buildSettingTile(
+            icon: HugeIcons.strokeRoundedDownload01,
+            title: 'Force Engine Update',
+            subtitle: 'Manual refresh if analysis is failing',
             trailing: TextButton(
-              onPressed: () => provider.updateEngine(),
-              child: const Text('Update'),
+              onPressed: provider.isUpdating
+                  ? null
+                  : () => provider.updateEngine(),
+              child: Text(provider.isUpdating ? 'Updating...' : 'Check'),
             ),
           ),
           const SizedBox(height: 32),
-          _buildSectionHeader('Storage'),
+          _buildSectionHeader('File Management'),
           _buildSettingTile(
-            icon: Icons.folder_open,
-            title: 'Download Path',
+            icon: HugeIcons.strokeRoundedFolder02,
+            title: 'Storage Location',
             subtitle: _savePath,
           ),
           const SizedBox(height: 32),
-          _buildSectionHeader('More'),
+          _buildSectionHeader('About AnyVid'),
           _buildSettingTile(
-            icon: Icons.privacy_tip_outlined,
+            icon: HugeIcons.strokeRoundedUserShield01,
             title: 'Privacy Policy',
-            subtitle: 'Read our terms and conditions',
+            subtitle: 'Your data stays on your device',
             onTap: () {
               // Open Privacy Policy
             },
           ),
           _buildSettingTile(
-            icon: Icons.info_outline,
-            title: 'Version',
-            subtitle: '1.0.0 (Production Build)',
+            icon: HugeIcons.strokeRoundedInformationCircle,
+            title: 'App Version',
+            subtitle: '1.0.1 (Production)',
           ),
         ],
       ),
@@ -81,12 +99,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 12, left: 4),
       child: Text(
         title.toUpperCase(),
         style: TextStyle(
           color: Colors.grey[600],
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
         ),
@@ -95,7 +113,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSettingTile({
-    required IconData icon,
+    required dynamic icon,
     required String title,
     required String subtitle,
     Widget? trailing,
@@ -106,6 +124,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[100]!),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -116,11 +135,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
       child: ListTile(
         onTap: onTap,
-        leading: Icon(icon, color: const Color(0xFF0061FF)),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0061FF).withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: HugeIcon(icon: icon, color: const Color(0xFF0061FF), size: 18),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        ),
         subtitle: Text(
           subtitle,
-          style: TextStyle(color: Colors.grey[600], fontSize: 13),
+          style: TextStyle(color: Colors.grey[500], fontSize: 12),
         ),
         trailing: trailing,
       ),

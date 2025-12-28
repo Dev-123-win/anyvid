@@ -16,6 +16,9 @@ class DownloadsProvider with ChangeNotifier {
   bool _isAnalyzing = false;
   bool get isAnalyzing => _isAnalyzing;
 
+  bool _isUpdating = false;
+  bool get isUpdating => _isUpdating;
+
   final Map<String, DownloadTask> _activeTasks = {};
   List<DownloadTask> get activeTasks => _activeTasks.values.toList();
 
@@ -46,16 +49,25 @@ class DownloadsProvider with ChangeNotifier {
           break;
         case 'onSuccess':
           final String? path = call.arguments['path'];
+          final String? url = call.arguments['url'];
           refreshHistory();
-          for (var task in _activeTasks.values) {
-            if (task.state == DownloadState.downloading) {
-              task.state = DownloadState.success;
-              task.filePath = path;
 
-              // Trigger Interstitial Ad on Success
-              AdService.showInterstitial(() {
-                // Done
-              });
+          if (url != null && _activeTasks.containsKey(url)) {
+            final task = _activeTasks[url]!;
+            task.state = DownloadState.success;
+            task.filePath = path;
+
+            // Trigger Interstitial Ad on Success
+            AdService.showInterstitial(() {
+              // Done
+            });
+          } else {
+            // Fallback for unexpected cases: mark all downloading as success
+            for (var task in _activeTasks.values) {
+              if (task.state == DownloadState.downloading) {
+                task.state = DownloadState.success;
+                task.filePath = path;
+              }
             }
           }
           notifyListeners();
@@ -149,7 +161,14 @@ class DownloadsProvider with ChangeNotifier {
   }
 
   Future<void> updateEngine() async {
-    await _channel.invokeMethod('updateEngine');
+    _isUpdating = true;
+    notifyListeners();
+    try {
+      await _channel.invokeMethod('updateEngine');
+    } finally {
+      _isUpdating = false;
+      notifyListeners();
+    }
   }
 
   Future<void> cleanTemporaryFiles() async {
