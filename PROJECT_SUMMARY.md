@@ -77,6 +77,9 @@ Implemented a sophisticated ad strategy using `google_mobile_ads`:
 - **Build Stability**: Reverted to the traditional `allprojects` repository management in `android/build.gradle.kts`. Updated `youtubedl-android` coordinates to the new `io.github.junkfood02` group ID.
 - **Binary Extraction Fixed**: Added `doNotStrip` rules for `libpython` and `libffmpeg` to prevent `llvm-strip` errors during build.
 - **Initialization Fixed**: Moved `YoutubeDL` and `FFmpeg` initialization to a background thread to prevent blocking the UI/Splash screen during app startup.
+- **UI Performance Optimized**:
+    - Refactored `AdService` to use a stateful `BannerAdWidget`, preventing memory leaks and build-cycle overhead.
+    - Eliminated synchronous disk I/O (`lengthSync`, `statSync`, `listSync`) from the Flutter UI and Providers, replacing them with asynchronous streams and `FutureBuilder`.
 - **API Migration**: Adjusted `MainActivity.kt` to accommodate API changes in the new group:
     - Relocated `FFmpeg` package from `...youtubedl_android.ffmpeg` to `com.yausername.ffmpeg`.
     - Renamed `VideoFormat` field usage to `fileSize` for maximum compatibility with the updated library.

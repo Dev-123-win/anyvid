@@ -171,52 +171,62 @@ class _HistoryItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fileName = file.path.split(Platform.pathSeparator).last;
-    final size = (file.lengthSync() / 1024 / 1024).toStringAsFixed(1);
     final isVideo = fileName.endsWith('.mp4');
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ListTile(
-        onTap: () => OpenFile.open(file.path),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Container(
-          width: 50,
-          height: 50,
+    return FutureBuilder<FileStat>(
+      future: file.stat(),
+      builder: (context, snapshot) {
+        final stat = snapshot.data;
+        final sizeRaw = stat?.size ?? 0;
+        final size = (sizeRaw / 1024 / 1024).toStringAsFixed(1);
+        final date = stat?.modified.toLocal().toString().split(' ')[0] ?? '...';
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: (isVideo ? Colors.blue[50] : Colors.orange[50]),
-            borderRadius: BorderRadius.circular(10),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          child: Icon(
-            isVideo ? Icons.movie_outlined : Icons.audiotrack_outlined,
-            color: isVideo ? Colors.blue : Colors.orange,
+          child: ListTile(
+            onTap: () => OpenFile.open(file.path),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+            leading: Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: (isVideo ? Colors.blue[50] : Colors.orange[50]),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                isVideo ? Icons.movie_outlined : Icons.audiotrack_outlined,
+                color: isVideo ? Colors.blue : Colors.orange,
+              ),
+            ),
+            title: Text(
+              fileName,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: Text(stat == null ? 'Loading...' : '$size MB • $date'),
+            trailing: const Icon(
+              Icons.play_circle_fill,
+              color: Color(0xFF0061FF),
+              size: 32,
+            ),
           ),
-        ),
-        title: Text(
-          fileName,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-        subtitle: Text(
-          '$size MB • ${file.statSync().modified.toLocal().toString().split(' ')[0]}',
-        ),
-        trailing: const Icon(
-          Icons.play_circle_fill,
-          color: Color(0xFF0061FF),
-          size: 32,
-        ),
-      ),
+        );
+      },
     );
   }
 }

@@ -120,17 +120,26 @@ class DownloadsProvider with ChangeNotifier {
       if (directory != null) {
         final downloadDir = Directory('${directory.path}/Download');
         if (await downloadDir.exists()) {
-          _history = downloadDir
-              .listSync()
+          final List<FileSystemEntity> entities = await downloadDir
+              .list()
+              .toList();
+          _history = entities
               .where(
                 (item) =>
                     item is File &&
                     (item.path.endsWith('.mp4') || item.path.endsWith('.mp3')),
               )
               .toList();
-          _history.sort(
-            (a, b) => b.statSync().modified.compareTo(a.statSync().modified),
-          );
+          // Non-blocking sort by pre-fetching stats
+          final List<MapEntry<FileSystemEntity, DateTime>> historyWithTime = [];
+          for (var entity in _history) {
+            final stat = await entity.stat();
+            historyWithTime.add(MapEntry(entity, stat.modified));
+          }
+
+          historyWithTime.sort((a, b) => b.value.compareTo(a.value));
+          _history = historyWithTime.map((e) => e.key).toList();
+
           notifyListeners();
         }
       }
@@ -150,12 +159,11 @@ class DownloadsProvider with ChangeNotifier {
         final downloadDir = Directory('${directory.path}/Download');
         if (await downloadDir.exists()) {
           final now = DateTime.now();
-          final list = downloadDir.listSync();
-          for (var entity in list) {
+          await for (var entity in downloadDir.list()) {
             if (entity is File) {
               final name = entity.path.toLowerCase();
               if (name.endsWith('.part') || name.endsWith('.ytdl')) {
-                final stat = entity.statSync();
+                final stat = await entity.stat();
                 // Delete if older than 24 hours
                 if (now.difference(stat.modified).inHours > 24) {
                   await entity.delete();
