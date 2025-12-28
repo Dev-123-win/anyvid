@@ -10,8 +10,7 @@ import 'services/ad_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  MobileAds.instance.initialize();
-
+  // Heavy SDKs moved to lazy load
   runApp(
     MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => DownloadsProvider())],
@@ -25,6 +24,8 @@ class AnyVidApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final baseTheme = ThemeData(brightness: Brightness.light);
+
     return MaterialApp(
       title: 'AnyVid',
       debugShowCheckedModeBanner: false,
@@ -35,17 +36,16 @@ class AnyVidApp extends StatelessWidget {
           surface: const Color(0xFFFAFAFA),
           primary: const Color(0xFF0061FF),
         ),
-        textTheme: GoogleFonts.interTextTheme(Theme.of(context).textTheme)
-            .copyWith(
-              displayMedium: GoogleFonts.poppins(
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF1A1A1A),
-              ),
-              titleLarge: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF1A1A1A),
-              ),
-            ),
+        textTheme: GoogleFonts.interTextTheme(baseTheme.textTheme).copyWith(
+          displayMedium: GoogleFonts.poppins(
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF1A1A1A),
+          ),
+          titleLarge: GoogleFonts.poppins(
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF1A1A1A),
+          ),
+        ),
       ),
       home: const MainNavigation(),
     );
@@ -61,6 +61,18 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Lazy load heavy SDKs after first frame to avoid splash hang
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        MobileAds.instance.initialize();
+      });
+    });
+  }
+
   final List<Widget> _screens = [
     const HomeScreen(),
     const HistoryScreen(),

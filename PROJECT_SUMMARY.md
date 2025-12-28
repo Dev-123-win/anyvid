@@ -77,6 +77,10 @@ Implemented a sophisticated ad strategy using `google_mobile_ads`:
 - **Build Stability**: Reverted to the traditional `allprojects` repository management in `android/build.gradle.kts`. Updated `youtubedl-android` coordinates to the new `io.github.junkfood02` group ID.
 - **Binary Extraction Fixed**: Added `doNotStrip` rules for `libpython` and `libffmpeg` to prevent `llvm-strip` errors during build.
 - **Initialization Fixed**: Moved `YoutubeDL` and `FFmpeg` initialization to a background thread to prevent blocking the UI/Splash screen during app startup.
+- **Startup Optimized (No More Hangs)**: 
+    - AdMob SDK initialization is now delayed until 500ms after the first frame renders.
+    - Permission requests in `HomeScreen` are delayed by 1 second to allow the UI to stabilize.
+    - Optimized `ThemeData` to eliminate expensive recursive build cycles during startup.
 - **UI Performance Optimized**:
     - Refactored `AdService` to use a stateful `BannerAdWidget`, preventing memory leaks and build-cycle overhead.
     - Eliminated synchronous disk I/O (`lengthSync`, `statSync`, `listSync`) from the Flutter UI and Providers, replacing them with asynchronous streams and `FutureBuilder`.

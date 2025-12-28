@@ -34,11 +34,14 @@ class MainActivity : FlutterActivity() {
         // Initialize heavy engines in background to avoid splash hang
         CoroutineScope(Dispatchers.IO).launch {
             try {
+                Log.d("MainActivity", "Starting Native Engine Initialization...")
                 YoutubeDL.getInstance().init(this@MainActivity)
+                Log.d("MainActivity", "YoutubeDL Initialized")
                 FFmpeg.getInstance().init(this@MainActivity)
-                Log.d("MainActivity", "Native Engines Initialized successfully")
+                Log.d("MainActivity", "FFmpeg Initialized")
+                Log.d("MainActivity", "Native Engines Ready")
             } catch (e: Exception) {
-                Log.e("MainActivity", "Failed to initialize YoutubeDL Engine", e)
+                Log.e("MainActivity", "Critical: Native initialization failed", e)
             }
         }
     }

@@ -20,7 +20,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _requestPermissions();
+    // Delay permissions to allow UI to render first
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(seconds: 1), () {
+        if (mounted) _requestPermissions();
+      });
+    });
   }
 
   Future<void> _requestPermissions() async {
