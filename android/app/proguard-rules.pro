@@ -1,9 +1,18 @@
 # ============================================
-# YoutubeDL & FFmpeg - Core Engine
+# YoutubeDL, FFmpeg & Aria2c - Core Engine
 # ============================================
+# Old package namespace
 -keep class com.yausername.youtubedl_android.** { *; }
 -keep class com.yausername.ffmpeg.** { *; }
+-keep class com.yausername.aria2c.** { *; }
+
+# New package namespace (io.github.junkfood02)
+-keep class io.github.junkfood02.** { *; }
+-dontwarn io.github.junkfood02.**
+
+# Flutter plugins
 -keep class io.flutter.plugins.** { *; }
+-keep class io.flutter.** { *; }
 
 # ============================================
 # Kotlin Coroutines - Critical for async operations
@@ -38,8 +47,12 @@
 -dontwarn okhttp3.**
 -dontwarn okio.**
 -keep class okhttp3.** { *; }
--keep class okio.** { *; }
 -keep interface okhttp3.** { *; }
+-keep class okio.** { *; }
+-keep interface okio.** { *; }
+-keep class okhttp3.internal.** { *; }
+-keep class okhttp3.internal.publicsuffix.PublicSuffixDatabase { *; }
+-dontwarn org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement
 
 # ============================================
 # Google Fonts - Dynamic Font Loading

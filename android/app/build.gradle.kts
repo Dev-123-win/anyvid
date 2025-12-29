@@ -13,10 +13,21 @@ android {
     packaging {
         jniLibs {
             useLegacyPackaging = true
+            // Don't strip any native libraries from youtubedl-android
             doNotStrip.add("**/*.zip.so")
-            doNotStrip.add("**/libpython.so")
+            doNotStrip.add("**/libpython*.so")
             doNotStrip.add("**/libffmpeg.so")
+            doNotStrip.add("**/libaria2c.so")  // CRITICAL: Don't strip aria2c
+            doNotStrip.add("**/lib*.so")       // Safety: don't strip any .so files
         }
+        resources {
+            excludes += listOf("META-INF/DEPENDENCIES", "META-INF/LICENSE", "META-INF/NOTICE")
+        }
+    }
+
+    // CRITICAL: Prevent compression of native assets so they can be loaded
+    aaptOptions {
+        noCompress("so", "zip", "mp3", "tflite")
     }
 
     compileOptions {
@@ -49,13 +60,18 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
             isMinifyEnabled = true
+            isShrinkResources = false  // Prevent resource stripping issues
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 
     dependencies {
+        // YoutubeDL core library
         implementation("io.github.junkfood02.youtubedl-android:library:0.17.0")
+        // FFmpeg for video merging
         implementation("io.github.junkfood02.youtubedl-android:ffmpeg:0.17.0")
+        // Aria2c for fast parallel downloads - CRITICAL!
+        implementation("io.github.junkfood02.youtubedl-android:aria2c:0.17.0")
     }
 }
 
